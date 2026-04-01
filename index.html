@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexTraffic | AI Control System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Custom YOLO model via Roboflow -->
+    <script src="https://cdn.roboflow.com/0.2.26/roboflow.js"></script>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="glass-panel main-header">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h1>AUTOVISION-X</h1>
+            </div>
+            <div class="header-status">
+                <div class="status-badge" id="ai-status">AI Mode: OFFLINE</div>
+                <div class="status-badge connected" id="serial-status">Controller: DISCONNECTED</div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="grid-layout">
+            
+            <!-- Left Panel: Live Camera & AI Feed -->
+            <section class="feed-section glass-panel">
+                <header class="section-header">
+                    <h2>Live Intersection Feed</h2>
+                    <div class="controls">
+                        <input type="text" id="camera-url" placeholder="IP Camera URL (e.g., http://192.168.1.5:4747/video)" class="glass-input">
+                        <button id="connect-cam" class="btn primary-btn">Connect IP Camera</button>
+                        <button id="use-device-cam" class="btn primary-btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)">📷 Use Device Camera</button>
+                    </div>
+                </header>
+                <div class="video-container" id="video-wrapper">
+                    <!-- IP camera stream (display only) -->
+                    <img id="camera-feed" crossorigin="anonymous" src="https://images.unsplash.com/photo-1566232535032-601e389b02aa?auto=format&fit=crop&q=80&w=1000" alt="Camera feed disconnected" style="display:block">
+                    <!-- Device camera feed (used for AI detection) -->
+                    <video id="camera-video" autoplay playsinline muted style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0"></video>
+                    <canvas id="detection-canvas"></canvas>
+                    <div class="overlay-stats">
+                        <div class="stat">Total: <span id="vehicle-count">0</span> objects</div>
+                        <div class="stat">Road 1: <span id="j1-count">0</span> | Road 2: <span id="j2-count">0</span> | Road 3: <span id="j3-count">0</span></div>
+                    </div>
+                </div>
+                <div class="ai-controls">
+                    <label class="switch">
+                        <input type="checkbox" id="ai-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="toggle-label">Enable Smart AI Routing (Auto-adjust timings based on vehicle count)</span>
+                </div>
+            </section>
+
+            <!-- Right Panel: Junction Controls -->
+            <section class="controls-section">
+                <!-- Junction 1 -->
+                <div class="junction-card glass-panel" data-junction="1">
+                    <div class="card-header">
+                        <h3>Road 1 (Main Road) <span id="j1-timer-display" style="float:right;color:#3b82f6;font-family:monospace;font-size:18px">--s</span></h3>
+                        <div class="traffic-lights">
+                            <div class="light red" id="j1-red"></div>
+                            <div class="light yellow" id="j1-yellow"></div>
+                            <div class="light green" id="j1-green"></div>
+                        </div>
+                    </div>
+                    <div class="timing-controls">
+                        <div class="input-group">
+                            <label>Red Time (s):</label>
+                            <input type="number" id="j1-red-time" value="30" class="glass-input timing-input">
+                        </div>
+                        <div class="input-group">
+                            <label>Green Time (s):</label>
+                            <input type="number" id="j1-green-time" value="30" class="glass-input timing-input">
+                        </div>
+                    </div>
+                    <button class="btn secondary-btn update-btn" onclick="updateJunction(1)">Override Timings</button>
+                </div>
+
+                <!-- Junction 2 -->
+                <div class="junction-card glass-panel" data-junction="2">
+                    <div class="card-header">
+                        <h3>Road 2 (Crossroad) <span id="j2-timer-display" style="float:right;color:#3b82f6;font-family:monospace;font-size:18px">--s</span></h3>
+                        <div class="traffic-lights">
+                            <div class="light red" id="j2-red"></div>
+                            <div class="light yellow" id="j2-yellow"></div>
+                            <div class="light green" id="j2-green"></div>
+                        </div>
+                    </div>
+                    <div class="timing-controls">
+                        <div class="input-group">
+                            <label>Red Time (s):</label>
+                            <input type="number" id="j2-red-time" value="30" class="glass-input timing-input">
+                        </div>
+                        <div class="input-group">
+                            <label>Green Time (s):</label>
+                            <input type="number" id="j2-green-time" value="30" class="glass-input timing-input">
+                        </div>
+                    </div>
+                    <button class="btn secondary-btn update-btn" onclick="updateJunction(2)">Override Timings</button>
+                </div>
+
+                <!-- Junction 3 -->
+                <div class="junction-card glass-panel" data-junction="3">
+                    <div class="card-header">
+                        <h3>Road 3 (Side Road) <span id="j3-timer-display" style="float:right;color:#3b82f6;font-family:monospace;font-size:18px">--s</span></h3>
+                        <div class="traffic-lights">
+                            <div class="light red" id="j3-red"></div>
+                            <div class="light yellow" id="j3-yellow"></div>
+                            <div class="light green" id="j3-green"></div>
+                        </div>
+                    </div>
+                    <div class="timing-controls">
+                        <div class="input-group">
+                            <label>Red Time (s):</label>
+                            <input type="number" id="j3-red-time" value="30" class="glass-input timing-input">
+                        </div>
+                        <div class="input-group">
+                            <label>Green Time (s):</label>
+                            <input type="number" id="j3-green-time" value="30" class="glass-input timing-input">
+                        </div>
+                    </div>
+                    <button class="btn secondary-btn update-btn" onclick="updateJunction(3)">Override Timings</button>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Time Saved Stats Card -->
+        <div class="glass-panel time-saved-card" id="time-saved-display">
+            <div class="ts-block">
+                <div class="ts-icon">⚡</div>
+                <div class="ts-info">
+                    <div class="ts-label">Time Saved This Session</div>
+                    <div class="ts-value" id="ts-total">0s</div>
+                </div>
+            </div>
+            <div class="ts-divider"></div>
+            <div class="ts-block">
+                <div class="ts-icon">📈</div>
+                <div class="ts-info">
+                    <div class="ts-label">Projected Savings</div>
+                    <div class="ts-value" id="ts-perhour">0s / hr</div>
+                </div>
+            </div>
+            <div class="ts-divider"></div>
+            <div class="ts-block">
+                <div class="ts-icon">🚦</div>
+                <div class="ts-info">
+                    <div class="ts-label">AI Smart Skip Mode</div>
+                    <div class="ts-value" style="color: var(--green-alert)">ACTIVE</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Terminal / Connection Panel -->
+        <footer class="terminal-panel glass-panel">
+            <div class="terminal-header">
+                <h3>System Logs & Connection</h3>
+                <button id="connect-serial" class="btn primary-btn">Connect Arduino (USB)</button>
+            </div>
+            <div id="terminal-output" class="terminal-output">
+                <div>[SYSTEM] NexTraffic Dashboard Initialized.</div>
+                <div>[INFO] Connect your Phone Camera or connect to the Arduino Uno.</div>
+            </div>
+        </footer>
+    </div>
+        <script src="script.js"></script>
+</body>
+</html>
