@@ -173,7 +173,7 @@ These results show high detection accuracy for real-time traffic counting.
 The model was trained and hosted on Roboflow cloud.
 
 **Roboflow Model URL:**
-Paste your model link here
+[Paste your model link here](https://app.roboflow.com/anurags-workspace-gt0an/live_traffic_counter/models/live_traffic_counter/1)
 
 ---
 
