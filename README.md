@@ -103,6 +103,87 @@ Looking at advanced traffic research, many propose utilizing **MANETs (Mobile Ad
 Because of the challenges in MANET architectures, NexTraffic relies on infrastructure-side sensing (Cameras + Sonar). The system physically tracks the geometry of the road. It does not matter if a vehicle is from 1980 or 2024; if it occupies physical space, it is detected and routed. It is infinitely more practical for current-generation smart cities.
 
 ---
+## 📷 Dataset
+
+A custom dataset of **556 traffic images** was created and annotated using **Roboflow**.
+
+### Dataset Details
+
+* Total images: **556**
+* Road type: **3-way T-junction**
+* Annotation tool: **Roboflow**
+* Custom traffic images
+* Real junction-based scenario
+
+### Detected Classes
+
+* Car
+* Bike
+* Bus
+* Truck
+* Auto
+
+---
+
+## 🤖 Model Training
+
+The model was trained using **YOLOv11 Object Detection (Fast)** on Roboflow.
+
+### Training Metrics
+
+* **mAP@50:** 99.2%
+* **Precision:** 98.2%
+* **Recall:** 99.4%
+* **F1 Score:** 98.8%
+
+These results show high detection accuracy for real-time traffic counting.
+
+---
+
+## 📊 Training Output
+
+![Model Metrics](screenshots/model_metrics.png)
+
+---
+
+## 🛠️ Tech Stack
+
+* HTML
+* CSS
+* JavaScript
+* Python
+* OpenCV
+* YOLOv11
+* Roboflow
+
+---
+
+## 💡 Core Functionality
+
+* vehicle detection
+* traffic density estimation
+* adaptive signal timing
+* reduced waiting time
+* smart junction control
+
+---
+
+## 🔗 Model Link
+
+The model was trained and hosted on Roboflow cloud.
+
+**Roboflow Model URL:**
+Paste your model link here
+
+---
+
+## 🚀 Future Scope
+
+* live CCTV camera integration
+* emergency vehicle priority
+* multi-junction synchronization
+* smart city deployment
+
 
 ## 11. RESULT
 
