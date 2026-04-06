@@ -142,7 +142,7 @@ These results show high detection accuracy for real-time traffic counting.
 
 ## 📊 Training Output
 
-![Model Metrics](screenshots/model_metrics.png)
+![Model Metrics](screenshots/Screenshot 2026-04-06 161555.png)
 
 ---
 
